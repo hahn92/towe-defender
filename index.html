@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Mazing — Tower Defense (Babylon.js)</title>
   <!-- Babylon.js por CDN (UMD: expone el global BABYLON) -->
   <script src="https://cdn.babylonjs.com/babylon.js"></script>
@@ -91,11 +91,13 @@
     #victoria h1 { font-size: 56px; margin: 0 0 8px; color: #4dff9e; letter-spacing: 2px; }
     #victoria p { font-size: 18px; color: #cdd; margin: 4px 0; }
     #gameover .stats { margin: 16px 0 24px; font-size: 16px; color: #9fb; text-align: center; }
-    #btnReiniciar, #btnReiniciarWin {
+    #btnReiniciar, #btnReiniciarWin, #btnSeguirInf {
       padding: 12px 30px; font-size: 18px; font-weight: 700; cursor: pointer;
       background: #2e8bff; color: #fff; border: none; border-radius: 10px;
     }
     #btnReiniciar:hover, #btnReiniciarWin:hover { background: #1f6fd6; }
+    #btnSeguirInf { background: #2f9d5a; }
+    #btnSeguirInf:hover { background: #268a4c; }
     #velbar {
       position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
       display: flex; gap: 6px; background: rgba(15,18,24,0.78); padding: 6px; border-radius: 10px;
@@ -128,6 +130,11 @@
       padding: 7px 18px; cursor: pointer; font-size: 13px;
     }
     .rCancel:hover { background: #404b5c; }
+    .rSell {
+      align-self: center; background: #7d3a2f; color: #ffe9e0; border: 1px solid #a85440;
+      border-radius: 8px; padding: 8px 20px; cursor: pointer; font-size: 13px; font-weight: 600;
+    }
+    .rSell:hover { background: #924438; }
     .rRepair {
       align-self: center; background: #2f7d4a; color: #eafff0; border: 1px solid #3fae66;
       border-radius: 8px; padding: 9px 20px; cursor: pointer; font-size: 14px; font-weight: 600;
@@ -218,6 +225,23 @@
     .scoreEmpty { color: #8aa; text-align: center; padding: 20px; }
     .goBtns { display: flex; gap: 10px; }
     .btnSec { background: #333c4a !important; }
+    /* ---- Pantallas pequeñas / táctil: HUD compacto y toolbar deslizable ---- */
+    @media (max-width: 700px) {
+      #hud { font-size: 11px; min-width: 168px; max-width: 178px; padding: 6px 9px; }
+      #ayuda, #mejoras, #leyenda { display: none; }   /* menos ruido; el manual lo cubre */
+      #velbar { left: auto; right: 8px; top: 8px; transform: none; }
+      .velBtn { width: 46px; height: 38px; }          /* dedo > puntero */
+      #clima { top: 58px; font-size: 12px; max-width: 60vw; }
+      #toolbar {
+        bottom: 10px; flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start;
+        max-width: 96vw; padding-bottom: 4px; -webkit-overflow-scrolling: touch;
+      }
+      .torreBtn { flex: 0 0 auto; min-width: 86px; padding: 9px 10px; }
+      #ramaPanel { min-width: 0; width: 92vw; max-width: 92vw; padding: 12px 12px; max-height: 86vh; overflow-y: auto; }
+      #ramaPanel .rOpts { flex-direction: column; }
+      #gameover h1, #victoria h1 { font-size: 38px; }
+      .goBtns { flex-wrap: wrap; justify-content: center; }
+    }
   </style>
 </head>
 <body>
@@ -270,7 +294,7 @@
   <div id="ramaPanel"></div>
 
   <div id="ayuda">
-    🖱️ Click izq: construir / evolucionar torre · Click der: vender · Teclas 1-7: elegir torre · Espacio: pausa · Rueda: zoom
+    🖱️ Click izq: construir / abrir torre (evolucionar, vender) · Click der: vender · Teclas 1-7: elegir torre · Espacio: pausa · Rueda: zoom
   </div>
 
   <div id="flash"></div>
@@ -290,9 +314,11 @@
     <p>Has defendido la base hasta el final.</p>
     <div class="stats" id="winStats"></div>
     <div class="goBtns">
+      <button id="btnSeguirInf">♾️ Seguir jugando</button>
       <button id="btnReiniciarWin">🔄 Jugar de nuevo</button>
       <button id="btnMenuWin" class="btnSec">🏠 Menú principal</button>
     </div>
+    <p style="font-size:13px;color:#8aa;margin-top:10px;">♾️ Modo infinito: las oleadas siguen creciendo, ¿hasta dónde llegas?</p>
   </div>
 
   <div id="manual">
@@ -305,14 +331,15 @@
       <h2>🎯 Objetivo</h2>
       <ul>
         <li>Sobrevive <b>20 oleadas</b> para <b>ganar</b>.</li>
+        <li>Tras la victoria puedes seguir en <b>♾️ modo infinito</b>: las oleadas siguen creciendo sin límite.</li>
         <li>Si los enemigos destruyen tu base (vida a 0), <b>pierdes</b>.</li>
         <li>Se guarda tu récord de mejor oleada entre partidas.</li>
       </ul>
 
       <h2>🕹️ Controles</h2>
       <div class="grid2">
-        <p>🖱️ <b>Click izquierdo</b>: construir torre / abrir su evolución</p>
-        <p>🖱️ <b>Click derecho</b>: vender torre (recupera parte del coste)</p>
+        <p>🖱️ <b>Click izquierdo</b> (o toque): construir torre / abrir su panel</p>
+        <p>🖱️ <b>Click derecho</b> o botón <b>💰 Vender</b> del panel: vender torre (recupera parte del coste)</p>
         <p>⌨️ <b>Teclas 1-7</b>: elegir tipo de torre</p>
         <p>⏯️ <b>Espacio</b>: pausar / reanudar</p>
         <p>🖱️ <b>Rueda</b>: zoom · <b>Arrastrar</b>: orbitar cámara</p>
@@ -360,6 +387,10 @@
         <b>golpe físico fuerte</b> (Artillería, Francotirador, Cañón…) se hace añicos → <b>daño ×2.5</b>.</div>
       <div class="combo">🔥❄️ <b>Choque térmico</b>: un enemigo <b>ardiendo</b> (Napalm) golpeado por
         <b>hielo</b> sufre <b>daño ×1.8</b>.</div>
+      <div class="combo">⚡💧 <b>Electrocución</b>: un enemigo <b>ralentizado o congelado</b> golpeado por
+        un rayo <b>Tesla</b> conduce la corriente → <b>daño ×1.6</b>.</div>
+      <div class="combo">🎯💥 <b>Ejecución</b>: un enemigo <b>marcado</b> (Marcador Láser) que queda por debajo
+        del <b>15% de vida</b> tras un golpe físico es <b>rematado al instante</b> (los jefes resisten).</div>
 
       <h2>👾 Enemigos</h2>
       <table>
@@ -414,6 +445,7 @@
         <div id="menuDific" class="menuOpts"></div>
         <div id="menuDificDesc" class="menuDesc"></div>
       </div>
+      <button id="btnContinuar" class="menuPlay" style="display:none;background:#2f9d5a;">⏩ Continuar partida</button>
       <button id="btnJugar" class="menuPlay">▶ Jugar</button>
       <div class="menuRow">
         <button id="btnComoJugar" class="menuLink">📖 Cómo jugar</button>
