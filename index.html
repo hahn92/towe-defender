@@ -4,10 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Mazing — Tower Defense (Babylon.js)</title>
-  <!-- Babylon.js por CDN (UMD: expone el global BABYLON) -->
-  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <!-- Babylon.js por CDN (UMD: expone el global BABYLON).
+       VERSIÓN FIJADA a propósito: el CDN sin versión sirve "latest" y una
+       actualización puede romper el juego sin tocar nada (p. ej. el bug de
+       animar 'scaling.x' que documenta el README). Para subir de versión:
+       cambiar las dos rutas v9.28.0 y volver a probar una partida entera. -->
+  <script src="https://cdn.babylonjs.com/v9.28.0/babylon.js"></script>
   <!-- Loader glTF/GLB para los modelos 3D (Kenney graveyard kit) -->
-  <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+  <script src="https://cdn.babylonjs.com/v9.28.0/loaders/babylonjs.loaders.min.js"></script>
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; font-family: system-ui, sans-serif; }
     #renderCanvas { width: 100%; height: 100%; display: block; touch-action: none; }
@@ -147,6 +151,19 @@
       border-radius: 8px; padding: 9px 20px; font-size: 14px; font-weight: 600;
     }
     .rRepairing small { color: #8fb4d8; font-weight: 400; }
+    #baseRepair { margin-top: 4px; }
+    .bRepair {
+      width: 100%; background: #7d4a2f; color: #ffe9e0; border: 1px solid #a87040;
+      border-radius: 7px; padding: 5px 10px; cursor: pointer; font-size: 11.5px; font-weight: 600;
+    }
+    .bRepair:hover:not(:disabled) { background: #925538; }
+    .bRepair:disabled { opacity: 0.45; cursor: not-allowed; }
+    .bRepair small { color: #e6cdbf; font-weight: 400; }
+    .brRepairing {
+      display: block; width: 100%; background: #2b3a4a; color: #9fd2ff; border: 1px solid #3a587a;
+      border-radius: 7px; padding: 5px 10px; font-size: 11.5px; font-weight: 600; text-align: center;
+    }
+    .brRepairing small { color: #8fb4d8; font-weight: 400; }
     #btnManual {
       margin-top: 6px; width: 100%; padding: 6px; cursor: pointer; font-weight: 600;
       background: #2b3340; color: #ffd23f; border: 1px solid #3a4658; border-radius: 7px;
@@ -252,6 +269,7 @@
   <div id="hud">
     <div>💰 Oro <span class="val" id="gold">0</span></div>
     <div>❤️ Base <span class="val" id="vida">0</span></div>
+    <div id="baseRepair"></div>
     <div>🌊 Oleada <span class="val" id="oleada">0</span></div>
     <div>👾 Enemigos <span class="val" id="enemigos">0</span></div>
     <div>🔬 Tu invento <span class="val" id="era">—</span></div>
@@ -467,6 +485,6 @@
   </div>
 
   <!-- Nuestro código como módulos ES -->
-  <script src="./bundle.js"></script>
+  <script src="./bundle.ceed49b193.js"></script>
 </body>
 </html>
